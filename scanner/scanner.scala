@@ -1,4 +1,6 @@
-package dev.toniogela.lox
+package dev.toniogela.lox.scanner
+
+import dev.toniogela.lox.Slox
 
 //! TODO Why separating type and impl? Couldn't we create an ADT?
 enum TokenType:
@@ -21,24 +23,23 @@ end TokenType
 case class Token(`type`: TokenType, lexeme: String, literal: Any, line: Int):
     override def toString(): String = s"${`type`} ${lexeme} ${literal}"
 
-
-enum Identifier(val name:String, val `type`: TokenType):
-  case AND extends Identifier("and", TokenType.AND)
-  case CLASS extends Identifier("class", TokenType.CLASS)
-  case ELSE extends Identifier("else", TokenType.ELSE)
-  case FALSE extends Identifier("false", TokenType.FALSE)
-  case FOR extends Identifier("for", TokenType.FOR)
-  case FUN extends Identifier("fun", TokenType.FUN)
-  case IF extends Identifier("if", TokenType.IF)
-  case NIL extends Identifier("nil", TokenType.NIL)
-  case OR extends Identifier("or", TokenType.OR)
-  case PRINT extends Identifier("print", TokenType.PRINT)
-  case RETURN extends Identifier("return", TokenType.RETURN)
-  case SUPER extends Identifier("super", TokenType.SUPER)
-  case THIS extends Identifier("this", TokenType.THIS)
-  case TRUE extends Identifier("true", TokenType.TRUE)
-  case VAR extends Identifier("var", TokenType.VAR)
-  case WHILE extends Identifier("while", TokenType.WHILE)
+enum Keyword(val name:String, val `type`: TokenType):
+  case AND extends Keyword("and", TokenType.AND)
+  case CLASS extends Keyword("class", TokenType.CLASS)
+  case ELSE extends Keyword("else", TokenType.ELSE)
+  case FALSE extends Keyword("false", TokenType.FALSE)
+  case FOR extends Keyword("for", TokenType.FOR)
+  case FUN extends Keyword("fun", TokenType.FUN)
+  case IF extends Keyword("if", TokenType.IF)
+  case NIL extends Keyword("nil", TokenType.NIL)
+  case OR extends Keyword("or", TokenType.OR)
+  case PRINT extends Keyword("print", TokenType.PRINT)
+  case RETURN extends Keyword("return", TokenType.RETURN)
+  case SUPER extends Keyword("super", TokenType.SUPER)
+  case THIS extends Keyword("this", TokenType.THIS)
+  case TRUE extends Keyword("true", TokenType.TRUE)
+  case VAR extends Keyword("var", TokenType.VAR)
+  case WHILE extends Keyword("while", TokenType.WHILE)
 
 class Scanner(val source: String):
     import TokenType.*
@@ -83,8 +84,8 @@ class Scanner(val source: String):
           case '"' => string()
           
           case c =>
-            if isDigit(c) then number() else 
-            if isAlpha(c) then identifier() 
+            if isDigit(c) then number()
+            else if isAlpha(c) then identifier()
             else Slox.error(line, s"Unexpected character: $c.")
     end scanToken
 
@@ -123,7 +124,7 @@ class Scanner(val source: String):
         addToken(STRING, value)
     end string
 
-    def isDigit(c: Char): Boolean = c >= 0 && c <= 9
+    def isDigit(c: Char): Boolean = c >= 49 && c <= 57 // Byte representation of 1 and 9
 
     def number(): Unit =
       while (isDigit(peek())) do advance()
@@ -141,7 +142,7 @@ class Scanner(val source: String):
       while isAlphaNumeric(peek()) do advance()
       val text: String = source.substring(start, current)
       addToken(
-        Identifier.values.find(_.name == text).fold(IDENTIFIER)(_.`type`)
+        Keyword.values.find(_.name == text).fold(IDENTIFIER)(_.`type`)
       )
 
     def isAlpha(c: Char): Boolean =

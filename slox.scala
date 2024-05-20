@@ -1,9 +1,8 @@
 package dev.toniogela.lox
 
+import java.io.{BufferedReader, InputStreamReader}
 import scala.io.Source
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import java.io.Reader
+import dev.toniogela.lox.scanner.{Scanner, Token}
 
 object Slox:
   //! TODO Mutability
