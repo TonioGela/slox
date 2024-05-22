@@ -7,15 +7,17 @@ import scala.collection.immutable.ArraySeq.ofInt
 // Testing all the snippets in chapter 3 "The Lox Language"
 class ScannerTest extends FunSuite {
 
-  extension (s:String)
+  extension (s: String)
+
     def convertsTo(ts: List[Token])(using Location): Unit = assertEquals(
       new Scanner(s.stripMargin).scanTokens(),
-      ts :+ Token(EOF, "", null, s.count(_ == '\n') + 1)
+      ts :+ Token(EOF, "", null, s.count(_ == '\n') + 1),
     )
 
-    def convertsTo(t: Token)(using Location): Unit = convertsTo(t :: Nil)
+    def convertsTo(t: Token)(using Location): Unit   = convertsTo(t :: Nil)
+    def convertsTo(ts: Token*)(using Location): Unit = convertsTo(ts.toList)
 
-  test("Scanner should recognise simple expressions"){
+  test("Scanner should recognise simple expressions") {
     // Single char tokens
     "(".convertsTo(Token(LEFT_PAREN, "(", null, 1))
     ")".convertsTo(Token(RIGHT_PAREN, ")", null, 1))
@@ -67,49 +69,66 @@ class ScannerTest extends FunSuite {
 
   test("Scanner should recognise tiny scripts") {
     """|// Your first Lox program!
-       |print "Hello, world!";""".convertsTo(List(
-          Token(PRINT, "print", null, 2),
-          Token(STRING, "\"Hello, world!\"", "Hello, world!", 2),
-          Token(SEMICOLON, ";", null, 2)
-        )
-      )
+       |print "Hello, world!";""".convertsTo(
+      Token(PRINT, "print", null, 2),
+      Token(STRING, "\"Hello, world!\"", "Hello, world!", 2),
+      Token(SEMICOLON, ";", null, 2),
+    )
 
     """|true;  // Not false.
-       |false; // Not *not* false.""".convertsTo(List(
-          Token(TRUE, "true", null, 1), Token(SEMICOLON, ";", null, 1),
-          Token(FALSE, "false", null, 2), Token(SEMICOLON, ";", null, 2)
-        )
-      )
+       |false; // Not *not* false.""".convertsTo(
+      Token(TRUE, "true", null, 1),
+      Token(SEMICOLON, ";", null, 1),
+      Token(FALSE, "false", null, 2),
+      Token(SEMICOLON, ";", null, 2),
+    )
 
     """|1234;  // An integer.
-       |12.34; // A decimal number.""".convertsTo(List(
-          Token(NUMBER, "1234", 1234.0d, 1), Token(SEMICOLON, ";", null, 1),
-          Token(NUMBER, "12.34", 12.34d, 2), Token(SEMICOLON, ";", null, 2)
-        )
-      )
+       |12.34; // A decimal number.""".convertsTo(
+      Token(NUMBER, "1234", 1234.0d, 1),
+      Token(SEMICOLON, ";", null, 1),
+      Token(NUMBER, "12.34", 12.34d, 2),
+      Token(SEMICOLON, ";", null, 2),
+    )
 
     """|"I am a string";
        |"";    // The empty string.
-       |"123"; // This is a string, not a number.""".convertsTo(List(
-          Token(STRING, "\"I am a string\"", "I am a string", 1), Token(SEMICOLON, ";", null, 1),
-          Token(STRING, "\"\"", "", 2), Token(SEMICOLON, ";", null, 2),
-          Token(STRING, "\"123\"", "123", 3), Token(SEMICOLON, ";", null, 3)
-        )
-       )
+       |"123"; // This is a string, not a number.""".convertsTo(
+      Token(STRING, "\"I am a string\"", "I am a string", 1),
+      Token(SEMICOLON, ";", null, 1),
+      Token(STRING, "\"\"", "", 2),
+      Token(SEMICOLON, ";", null, 2),
+      Token(STRING, "\"123\"", "123", 3),
+      Token(SEMICOLON, ";", null, 3),
+    )
 
     """|add + me;
        |subtract - me;
        |multiply * me;
-       |divide / me;""".convertsTo(List(
-        Token(IDENTIFIER, "add", null, 1), Token(PLUS, "+", null, 1), Token(IDENTIFIER, "me", null, 1), Token(SEMICOLON, ";", null, 1),
-        Token(IDENTIFIER, "subtract", null, 2), Token(MINUS, "-", null, 2), Token(IDENTIFIER, "me", null, 2),Token(SEMICOLON, ";", null, 2),
-        Token(IDENTIFIER, "multiply", null, 3), Token(STAR, "*", null, 3), Token(IDENTIFIER, "me", null, 3), Token(SEMICOLON, ";", null, 3),
-        Token(IDENTIFIER, "divide", null, 4), Token(SLASH, "/", null, 4), Token(IDENTIFIER, "me", null, 4), Token(SEMICOLON, ";", null, 4)
-       ))
+       |divide / me;""".convertsTo(
+      Token(IDENTIFIER, "add", null, 1),
+      Token(PLUS, "+", null, 1),
+      Token(IDENTIFIER, "me", null, 1),
+      Token(SEMICOLON, ";", null, 1),
+      Token(IDENTIFIER, "subtract", null, 2),
+      Token(MINUS, "-", null, 2),
+      Token(IDENTIFIER, "me", null, 2),
+      Token(SEMICOLON, ";", null, 2),
+      Token(IDENTIFIER, "multiply", null, 3),
+      Token(STAR, "*", null, 3),
+      Token(IDENTIFIER, "me", null, 3),
+      Token(SEMICOLON, ";", null, 3),
+      Token(IDENTIFIER, "divide", null, 4),
+      Token(SLASH, "/", null, 4),
+      Token(IDENTIFIER, "me", null, 4),
+      Token(SEMICOLON, ";", null, 4),
+    )
 
-    "-negateMe;".convertsTo(List(
-      Token(MINUS, "-", null, 1), Token(IDENTIFIER, "negateMe", null, 1), Token(SEMICOLON, ";", null, 1)
-    ))
+    "-negateMe;".convertsTo(
+      Token(MINUS, "-", null, 1),
+      Token(IDENTIFIER, "negateMe", null, 1),
+      Token(SEMICOLON, ";", null, 1),
+    )
 
     """|less < than;
        |lessThan <= orEqual;
@@ -169,7 +188,7 @@ class ScannerTest extends FunSuite {
 
   }
 
-  test("Scanner should recognise function expressions"){
+  test("Scanner should recognise function expressions") {
     "makeBreakfast(bacon, eggs, toast);".convertsTo(Nil)
 
     "makeBreakfast();".convertsTo(Nil)
