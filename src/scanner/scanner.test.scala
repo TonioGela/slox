@@ -2,7 +2,6 @@ package dev.toniogela.lox.scanner
 
 import dev.toniogela.lox.scanner.TokenType.*
 import munit.*
-import scala.collection.immutable.ArraySeq.ofInt
 import munit.diff.*
 import munit.internal.console.Printers
 
