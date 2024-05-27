@@ -15,6 +15,11 @@ class Parser(val tokens: List[Token]):
 
   private def expression(): Expr = equality()
 
+  // * The precedence is dictated by the order
+  // * in which the call chain is implemented
+
+  // ! TODO Parsing in this shape is what you
+  // ! do in case of left associative expressions
   private def equality(): Expr = {
     var expr: Expr = comparison()
 

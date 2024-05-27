@@ -2,7 +2,7 @@ package dev.toniogela.lox.scanner
 
 import dev.toniogela.lox.Slox
 
-//! TODO Why separating type and impl? Couldn't we create an ADT?
+// ! TODO Why separating type and impl? Couldn't we create an ADT?
 enum TokenType:
 
   // Single-character tokens.
@@ -48,7 +48,7 @@ end Keyword
 class Scanner(val source: String):
   import TokenType.*
 
-  var tokens: List[Token] = Nil // TODO use Vector or Chain
+  var tokens: List[Token] = Nil // ! TODO use Vector or Chain
   var start: Int          = 0
   var current: Int        = 0
   var line: Int           = 1
