@@ -6,7 +6,7 @@ import munit.diff.*
 import munit.internal.console.Printers
 
 // Testing all the snippets in chapter 3 "The Lox Language"
-class ScannerTest extends FunSuite {
+class ScannerTest extends FunSuite:
 
   override def printer: Printer = Printer(200)(PartialFunction.empty)
 
@@ -835,4 +835,4 @@ class ScannerTest extends FunSuite {
     )
   }
 
-}
+end ScannerTest

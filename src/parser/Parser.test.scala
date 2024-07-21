@@ -1,7 +1,6 @@
 package dev.toniogela.lox.parser
 
 import munit.*
-import munit.diff.Printer
 import org.scalacheck.Gen
 import org.scalacheck.Prop.*
 import dev.toniogela.lox.ast.*
@@ -9,8 +8,6 @@ import dev.toniogela.lox.scanner.*
 import dev.toniogela.lox.scanner.TokenType.*
 
 class ParserTest extends ScalaCheckSuite:
-
-  override def printer: Printer = Printer(2000)(PartialFunction.empty)
 
   extension (t: Token)
 

@@ -11,7 +11,7 @@ class Parser(val tokens: List[Token]):
 
   def parse(): Expr =
     try { expression() }
-    catch { case x: ParseError => x.printStackTrace(); null }
+    catch { case x: ParseError => null }
 
   private def expression(): Expr = equality()
 
