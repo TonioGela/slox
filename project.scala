@@ -1,5 +1,8 @@
 // Main
 //> using scala "3.4.2"
+// //> using platform native
+// //> using nativeMode release-full
+// //> using nativeLto full
 //> using packaging.output "slox"
 
 // Test

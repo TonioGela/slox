@@ -1,5 +1,6 @@
 package dev.toniogela.lox.parser
 
+import scala.collection.mutable.ListBuffer
 import dev.toniogela.lox.Slox
 import dev.toniogela.lox.ast.*
 import dev.toniogela.lox.scanner.*
@@ -9,9 +10,27 @@ class Parser(val tokens: List[Token]):
   // ! TODO Mutability
   var current: Int = 0
 
-  def parse(): Expr =
-    try { expression() }
-    catch { case x: ParseError => null }
+  def parse(): List[Stmt] = {
+    val statements = ListBuffer.empty[Stmt]
+    while !isAtEnd() do {
+      statements.addOne(statement())
+    }
+    statements.toList
+  }
+
+  private def statement(): Stmt =
+    if matches(PRINT) then printStatement()
+    else expressionStatement()
+
+  private def printStatement(): Stmt =
+    val value: Expr = expression()
+    consume(SEMICOLON, "Expect ';' after value.")
+    Print(value)
+
+  private def expressionStatement(): Stmt =
+    val value: Expr = expression()
+    consume(SEMICOLON, "Expect ';' after expression.")
+    Expression(value)
 
   private def expression(): Expr = equality()
 

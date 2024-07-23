@@ -3,7 +3,13 @@ package dev.toniogela.lox.ast
 import dev.toniogela.lox.scanner.*
 import dev.toniogela.lox.Slox
 
-object Interpreter extends Visitor[Any]:
+object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
+
+  override def visitExpressionStmt(stmt: Expression): Unit = evaluate(stmt.expr)
+
+  override def visitPrintStmt(stmt: Print): Unit =
+    val value = evaluate(stmt.expr)
+    println(stringify(value))
 
   override def visitBinaryExpr(expr: Binary): Any =
     val left  = evaluate(expr.left)
@@ -62,6 +68,7 @@ object Interpreter extends Visitor[Any]:
       case _               => null // This should be unreachable
 
   private def evaluate(expr: Expr): Any = expr.accept(this)
+  private def execute(stmt: Stmt): Unit = stmt.accept(this)
 
   private def isThruthy(item: Any): Boolean =
     if item == null then false
@@ -83,10 +90,9 @@ object Interpreter extends Visitor[Any]:
 
   class RuntimeError(val token: Token, message: String) extends RuntimeException(message)
 
-  def interpret(expression: Expr): Unit =
+  def interpret(stmts: List[Stmt]): Unit =
     try {
-      val value = evaluate(expression)
-      System.out.println(stringify(value))
+      stmts.foreach(execute)
     } catch {
       case error: RuntimeError => Slox.runtimeError(error)
     }

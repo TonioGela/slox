@@ -18,13 +18,13 @@ class InterpreterTest extends FunSuite:
   }
 
   testWithStdOut("Intepreter should correctly interpret expressions") { baos =>
-    val expression: Expr = Binary(
+    val statement: Stmt = Print(Binary(
       Unary(Token(MINUS, "-", null, 1), new Literal(123d)),
       Token(STAR, "*", null, 1),
       Grouping(Literal(45.67)),
-    )
+    ))
 
-    Interpreter.interpret(expression)
+    Interpreter.interpret(statement :: Nil)
     assertEquals("-5617.41", baos.toString().trim())
   }
 

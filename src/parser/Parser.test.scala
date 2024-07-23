@@ -12,16 +12,18 @@ class ParserTest extends ScalaCheckSuite:
   extension (t: Token)
 
     def parsesTo(expr: Expr)(using Location): Unit = assertEquals(
-      new Parser(t :: Token(EOF, "", null, 1) :: Nil).parse(),
-      expr,
+      new Parser(t :: Token(SEMICOLON, ";", ";", 1) :: Token(EOF, "", null, 1) :: Nil).parse(),
+      Expression(expr) :: Nil,
     )
 
   extension (ts: List[Token])
 
-    def parsesTo(expr: Expr)(using Location): Unit = assertEquals(
-      new Parser(ts :+ Token(EOF, "", null, ts.map(_.line).maxOption.fold(1)(_ + 1))).parse(),
-      expr,
-    )
+    def parsesTo(expr: Expr)(using Location): Unit =
+      val line: Int = ts.map(_.line).maxOption.fold(1)(_ + 1)
+      assertEquals(
+        new Parser(ts :+ Token(SEMICOLON, ";", ";", line) :+ Token(EOF, "", null, line)).parse(),
+        Expression(expr) :: Nil,
+      )
 
   property("All the strings should be parsed to Literal strings") {
     forAll((s: String) => Token(STRING, s"\"$s\"", s, 1).parsesTo(new Literal(s)))

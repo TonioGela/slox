@@ -39,11 +39,11 @@ object Slox:
     readEval(new BufferedReader(new InputStreamReader(System.in)))
 
   def run(source: String): Unit =
-    val scanner: Scanner    = Scanner(source)
-    val tokens: List[Token] = scanner.scanTokens()
-    val parser: Parser      = new Parser(tokens)
-    val expression: Expr    = parser.parse()
-    if hadError then () else Interpreter.interpret(expression)
+    val scanner: Scanner       = Scanner(source)
+    val tokens: List[Token]    = scanner.scanTokens()
+    val parser: Parser         = new Parser(tokens)
+    val statements: List[Stmt] = parser.parse()
+    Interpreter.interpret(statements)
 
   def error(line: Int, message: String): Unit = report(line, "", message)
 
