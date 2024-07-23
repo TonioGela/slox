@@ -3,7 +3,7 @@ package dev.toniogela.lox.ast
 import dev.toniogela.lox.scanner.*
 
 trait Visitor[T]:
-  // def visitAssignExpr(expr: Assign): T
+  def visitAssignExpr(expr: Assign): T
   def visitBinaryExpr(expr: Binary): T
   // def visitCallExpr(expr: Call): T
   // def visitGetExpr(expr: Get): T
@@ -14,13 +14,13 @@ trait Visitor[T]:
   // def visitSuperExpr(expr: Super): T
   // def visitThisExpr(expr: This): T
   def visitUnaryExpr(expr: Unary): T
-  // def visitVariableExpr(expr: Variable): T
+  def visitVariableExpr(expr: Variable): T
 
 sealed trait Expr:
   def accept[T](visitor: Visitor[T]): T
 
-// case class Assign(name: Token, value: Expr) extends Expr:
-//   override def accept[T](visitor: Visitor[T]): T = visitor.visitAssignExpr(this)
+case class Assign(name: Token, value: Expr) extends Expr:
+  override def accept[T](visitor: Visitor[T]): T = visitor.visitAssignExpr(this)
 
 case class Binary(left: Expr, operator: Token, right: Expr) extends Expr:
   override def accept[T](visitor: Visitor[T]): T = visitor.visitBinaryExpr(this)
@@ -52,5 +52,5 @@ case class Literal(value: Any) extends Expr:
 case class Unary(operator: Token, right: Expr) extends Expr:
   override def accept[T](visitor: Visitor[T]): T = visitor.visitUnaryExpr(this)
 
-// case class Variable(name: Token) extends Expr:
-//   override def accept[T](visitor: Visitor[T]): T = visitor.visitVariableExpr(this)
+case class Variable(name: Token) extends Expr:
+  override def accept[T](visitor: Visitor[T]): T = visitor.visitVariableExpr(this)

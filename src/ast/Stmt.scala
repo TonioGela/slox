@@ -10,7 +10,7 @@ trait StmtVisitor[T]:
   // def visitIfStmt(stmt: If): T
   def visitPrintStmt(stmt: Print): T
   // def visitReturnStmt(stmt: Return): T
-  // def visitVarStmt(stmt: Var): T
+  def visitVarStmt(stmt: Var): T
   // def visitWhileStmt(stmt: While): T
 
 sealed trait Stmt:
@@ -37,8 +37,9 @@ case class Print(expr: Expr) extends Stmt:
 // case class Return(keyword: Token, value: Expr) extends Stmt:
 //   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitReturnStmt(this)
 
-// case class Var(name: Token, initializer: Expr) extends Stmt:
-//   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitVarStmt(this)
+//* initializer is null when the variable is not initialised. We can replace it with an option
+case class Var(name: Token, initializer: Expr) extends Stmt:
+  override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitVarStmt(this)
 
 // case class While(condition: Expr, body: List[Stmt]) extends Stmt:
 //   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitWhileStmt(this)

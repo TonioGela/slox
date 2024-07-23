@@ -13,14 +13,30 @@ class Parser(val tokens: List[Token]):
   def parse(): List[Stmt] = {
     val statements = ListBuffer.empty[Stmt]
     while !isAtEnd() do {
-      statements.addOne(statement())
+      statements.addOne(declaration())
     }
     statements.toList
   }
 
+  private def declaration(): Stmt =
+    try {
+      if matches(VAR) then varDeclaration() else statement()
+    } catch {
+      case _: ParseError => synchronize(); null
+    }
+
   private def statement(): Stmt =
     if matches(PRINT) then printStatement()
     else expressionStatement()
+
+  private def varDeclaration(): Stmt =
+    val name: Token       = consume(IDENTIFIER, "Expect variable name.")
+    var initializer: Expr = if matches(EQUAL) then expression() else null
+    consume(
+      SEMICOLON,
+      "Expect ';' after variable declaration.",
+    )
+    Var(name, initializer)
 
   private def printStatement(): Stmt =
     val value: Expr = expression()
@@ -32,7 +48,19 @@ class Parser(val tokens: List[Token]):
     consume(SEMICOLON, "Expect ';' after expression.")
     Expression(value)
 
-  private def expression(): Expr = equality()
+  private def expression(): Expr = assignment()
+
+  private def assignment(): Expr =
+    val expr: Expr = equality()
+    if matches(EQUAL) then {
+      val equals: Token = previous()
+      val value: Expr   = assignment()
+      expr match
+        case Variable(name) => Assign(name, value)
+        case _              =>
+          error(equals, "Invalid assignment target.")
+          expr
+    } else expr
 
   // * The precedence is dictated by the order
   // * in which the call chain is implemented
@@ -93,10 +121,11 @@ class Parser(val tokens: List[Token]):
 
     // ! TODO Multiple returns
   private def primary(): Expr = {
-    if matches(FALSE) then return new Literal(false)
-    if matches(TRUE) then return new Literal(true)
-    if matches(NIL) then return new Literal(null)
-    if matches(NUMBER, STRING) then return new Literal(previous().literal)
+    if matches(FALSE) then return Literal(false)
+    if matches(TRUE) then return Literal(true)
+    if matches(NIL) then return Literal(null)
+    if matches(NUMBER, STRING) then return Literal(previous().literal)
+    if matches(IDENTIFIER) then return Variable(previous())
     if matches(LEFT_PAREN) then
       val expr: Expr = expression()
       consume(RIGHT_PAREN, "Expect ')' after expression.")

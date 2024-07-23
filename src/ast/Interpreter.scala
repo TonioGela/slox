@@ -2,8 +2,22 @@ package dev.toniogela.lox.ast
 
 import dev.toniogela.lox.scanner.*
 import dev.toniogela.lox.Slox
+import dev.toniogela.lox.Environment
 
 object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
+
+  private val environment: Environment = Environment()
+
+  override def visitVarStmt(stmt: Var): Unit =
+    val value: Any = Option(stmt.initializer).map(evaluate).getOrElse(null)
+    environment.define(stmt.name.lexeme, value)
+
+  def visitAssignExpr(expr: Assign): Any =
+    val value: Any = evaluate(expr.value)
+    environment.assign(expr.name, value)
+    value
+
+  override def visitVariableExpr(expr: Variable): Any = environment.get(expr.name)
 
   override def visitExpressionStmt(stmt: Expression): Unit = evaluate(stmt.expr)
 
