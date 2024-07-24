@@ -8,6 +8,20 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
   private var environment: Environment = Environment()
 
+  override def visitLogicalExpr(expr: Logical): Any =
+    val left: Any = evaluate(expr.left)
+    if expr.operator.`type` == TokenType.OR then {
+      if isThruthy(left) then left else evaluate(expr.right)
+    } else {
+      if !isThruthy(left) then left else evaluate(expr.right)
+    }
+
+  override def visitIfStmt(stmt: If): Unit =
+    if isThruthy(evaluate(stmt.condition)) then
+      execute(stmt.thenBranch)
+    else if stmt.thenBranch != null then
+      execute(stmt.elseBranch)
+
   override def visitBlockStmt(stmt: Block): Unit = executeBlock(stmt.statements, environment.child())
 
   override def visitVarStmt(stmt: Var): Unit =

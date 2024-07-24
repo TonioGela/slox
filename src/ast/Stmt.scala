@@ -7,7 +7,7 @@ trait StmtVisitor[T]:
   // def visitClassStmt(stmt: Clazz): T
   def visitExpressionStmt(stmt: Expression): T
   // def visitFunctionStmt(stmt: Function): T
-  // def visitIfStmt(stmt: If): T
+  def visitIfStmt(stmt: If): T
   def visitPrintStmt(stmt: Print): T
   // def visitReturnStmt(stmt: Return): T
   def visitVarStmt(stmt: Var): T
@@ -28,8 +28,8 @@ case class Expression(expr: Expr) extends Stmt:
 // case class Function(name: Token, params: List[Token], body: List[Stmt]) extends Stmt:
 //   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitFunctionStmt(this)
 
-// case class If(condition: Expr, thenBranch: Stmt, elseBranch: Stmt) extends Stmt:
-//   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitIfStmt(this)
+case class If(condition: Expr, thenBranch: Stmt, elseBranch: Stmt) extends Stmt:
+  override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitIfStmt(this)
 
 case class Print(expr: Expr) extends Stmt:
   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitPrintStmt(this)

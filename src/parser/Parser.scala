@@ -26,9 +26,18 @@ class Parser(val tokens: List[Token]):
     }
 
   private def statement(): Stmt =
-    if matches(PRINT) then printStatement()
+    if matches(IF) then ifStatement()
+    else if matches(PRINT) then printStatement()
     else if matches(LEFT_BRACE) then Block(block())
     else expressionStatement()
+
+  private def ifStatement(): Stmt =
+    consume(LEFT_PAREN, "Expect '(' after 'if'.")
+    val condition: Expr  = expression()
+    consume(RIGHT_PAREN, "Expect ')' after if condition.")
+    val thenBranch: Stmt = statement()
+    var elseBranch: Stmt = if matches(ELSE) then statement() else null
+    If(condition, thenBranch, elseBranch)
 
   private def block(): List[Stmt] = {
     val statements = ListBuffer.empty[Stmt]
@@ -60,8 +69,26 @@ class Parser(val tokens: List[Token]):
 
   private def expression(): Expr = assignment()
 
+  private def or(): Expr =
+    var expr: Expr = and()
+    while matches(OR) do {
+      val operator: Token = previous()
+      val right: Expr     = and()
+      expr = Logical(expr, operator, right)
+    }
+    expr
+
+  private def and(): Expr =
+    var expr: Expr = equality()
+    while matches(AND) do {
+      val operator: Token = previous()
+      val right: Expr     = equality()
+      expr = Logical(expr, operator, right)
+    }
+    expr
+
   private def assignment(): Expr =
-    val expr: Expr = equality()
+    val expr: Expr = or()
     if matches(EQUAL) then {
       val equals: Token = previous()
       val value: Expr   = assignment()

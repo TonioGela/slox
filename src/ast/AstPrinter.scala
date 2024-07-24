@@ -7,6 +7,8 @@ object AstPrinter extends Visitor[String]:
   override def visitBinaryExpr(expr: Binary): String =
     parenthesize(expr.operator.lexeme, expr.left, expr.right)
 
+  override def visitLogicalExpr(expr: Logical): String = ???
+
   override def visitVariableExpr(expr: Variable): String = ???
 
   override def visitAssignExpr(expr: Assign): String = ???

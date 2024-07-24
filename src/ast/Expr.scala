@@ -9,7 +9,7 @@ trait Visitor[T]:
   // def visitGetExpr(expr: Get): T
   def visitGroupingExpr(expr: Grouping): T
   def visitLiteralExpr(expr: Literal): T
-  // def visitLogicalExpr(expr: Logical): T
+  def visitLogicalExpr(expr: Logical): T
   // def visitSetExpr(expr: Set): T
   // def visitSuperExpr(expr: Super): T
   // def visitThisExpr(expr: This): T
@@ -37,8 +37,8 @@ case class Grouping(expression: Expr) extends Expr:
 case class Literal(value: Any) extends Expr:
   override def accept[T](visitor: Visitor[T]): T = visitor.visitLiteralExpr(this)
 
-// case class Logical(left: Expr, operator: Token, right: Expr) extends Expr:
-//   override def accept[T](visitor: Visitor[T]): T = visitor.visitLogicalExpr(this)
+case class Logical(left: Expr, operator: Token, right: Expr) extends Expr:
+  override def accept[T](visitor: Visitor[T]): T = visitor.visitLogicalExpr(this)
 
 // case class Set(item: Expr, name: Token, value: Expr) extends Expr:
 //   override def accept[T](visitor: Visitor[T]): T = visitor.visitSetExpr(this)
