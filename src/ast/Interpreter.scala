@@ -6,7 +6,9 @@ import dev.toniogela.lox.Environment
 
 object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
-  private val environment: Environment = Environment()
+  private var environment: Environment = Environment()
+
+  override def visitBlockStmt(stmt: Block): Unit = executeBlock(stmt.statements, environment.child())
 
   override def visitVarStmt(stmt: Var): Unit =
     val value: Any = Option(stmt.initializer).map(evaluate).getOrElse(null)
@@ -82,7 +84,16 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
       case _               => null // This should be unreachable
 
   private def evaluate(expr: Expr): Any = expr.accept(this)
-  private def execute(stmt: Stmt): Unit = stmt.accept(this)
+  private def execute(stmt: Stmt): Unit = stmt.accept(this) // * make it accept an enviroment too (to avoid mutability)
+
+  private def executeBlock(stmts: List[Stmt], env: Environment): Unit =
+    val prevEnvironment: Environment = this.environment
+    try {
+      this.environment = env
+      stmts.foreach(execute)
+    } finally {
+      this.environment = prevEnvironment
+    }
 
   private def isThruthy(item: Any): Boolean =
     if item == null then false

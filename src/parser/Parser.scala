@@ -27,7 +27,17 @@ class Parser(val tokens: List[Token]):
 
   private def statement(): Stmt =
     if matches(PRINT) then printStatement()
+    else if matches(LEFT_BRACE) then Block(block())
     else expressionStatement()
+
+  private def block(): List[Stmt] = {
+    val statements = ListBuffer.empty[Stmt]
+    while !check(RIGHT_BRACE) && !isAtEnd() do {
+      statements.addOne(declaration())
+    }
+    consume(RIGHT_BRACE, "Expect '}' after block.")
+    statements.toList
+  }
 
   private def varDeclaration(): Stmt =
     val name: Token       = consume(IDENTIFIER, "Expect variable name.")

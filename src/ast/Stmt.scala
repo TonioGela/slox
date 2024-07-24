@@ -3,7 +3,7 @@ package dev.toniogela.lox.ast
 import dev.toniogela.lox.scanner.Token
 
 trait StmtVisitor[T]:
-  // def visitBlockStmt(stmt: Block): T
+  def visitBlockStmt(stmt: Block): T
   // def visitClassStmt(stmt: Clazz): T
   def visitExpressionStmt(stmt: Expression): T
   // def visitFunctionStmt(stmt: Function): T
@@ -16,8 +16,8 @@ trait StmtVisitor[T]:
 sealed trait Stmt:
   def accept[T](visitor: StmtVisitor[T]): T
 
-// case class Block(statements: List[Stmt]) extends Stmt:
-//   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitBlockStmt(this)
+case class Block(statements: List[Stmt]) extends Stmt:
+  override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitBlockStmt(this)
 
 // case class Clazz(name: Token, superclass: Variable, methods: List[Function]) extends Stmt:
 //   override def accept[T](visitor: StmtVisitor[T]): T = visitor.visitClassStmt(this)
