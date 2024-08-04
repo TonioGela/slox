@@ -28,8 +28,16 @@ class Parser(val tokens: List[Token]):
   private def statement(): Stmt =
     if matches(IF) then ifStatement()
     else if matches(PRINT) then printStatement()
+    else if matches(WHILE) then whileStatement()
     else if matches(LEFT_BRACE) then Block(block())
     else expressionStatement()
+
+  private def whileStatement(): Stmt =
+    consume(LEFT_PAREN, "Expect '(' after 'while'.")
+    val condition: Expr = expression()
+    consume(RIGHT_PAREN, "Expect ')' after condition.")
+    val body: Stmt      = statement()
+    While(condition, body)
 
   private def ifStatement(): Stmt =
     consume(LEFT_PAREN, "Expect '(' after 'if'.")

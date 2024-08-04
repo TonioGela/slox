@@ -6,6 +6,9 @@ import dev.toniogela.lox.Environment
 
 object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
+  override def visitWhileStmt(stmt: While): Unit =
+    while isThruthy(evaluate(stmt.condition)) do execute(stmt.body)
+
   private var environment: Environment = Environment()
 
   override def visitLogicalExpr(expr: Logical): Any =
