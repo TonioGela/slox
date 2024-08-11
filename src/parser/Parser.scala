@@ -26,11 +26,39 @@ class Parser(val tokens: List[Token]):
     }
 
   private def statement(): Stmt =
-    if matches(IF) then ifStatement()
+    if matches(FOR) then forStatement()
+    else if matches(IF) then ifStatement()
     else if matches(PRINT) then printStatement()
     else if matches(WHILE) then whileStatement()
     else if matches(LEFT_BRACE) then Block(block())
     else expressionStatement()
+
+  private def forStatement(): Stmt =
+    consume(LEFT_PAREN, "Expect '(' after 'for'.")
+    val initializer: Option[Stmt] =
+      if matches(SEMICOLON) then None
+      else if matches(VAR) then Some(varDeclaration())
+      else Some(expressionStatement())
+
+    val condition: Option[Expr] = Option.unless(check(SEMICOLON))(expression())
+    consume(SEMICOLON, "Expect ';' after loop condition.")
+
+    val increment: Option[Expr] = Option.unless(check(RIGHT_PAREN))(expression())
+    consume(RIGHT_PAREN, "Expect ')' after for clauses.")
+
+    val body: Stmt = statement()
+
+    val bodyWithIncrement: Stmt =
+      increment.fold(body)(incExpr => Block(body :: Expression(incExpr) :: Nil))
+
+    val whileLoop: Stmt = While(
+      condition.getOrElse(Literal(true)),
+      bodyWithIncrement,
+    )
+
+    initializer.fold(whileLoop)(initStmt => Block(initStmt :: whileLoop :: Nil))
+
+  end forStatement
 
   private def whileStatement(): Stmt =
     consume(LEFT_PAREN, "Expect '(' after 'while'.")
