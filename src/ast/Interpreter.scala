@@ -22,7 +22,20 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
   override def visitWhileStmt(stmt: While): Unit =
     while isThruthy(evaluate(stmt.condition)) do execute(stmt.body)
 
-  private var environment: Environment = Environment()
+  final val globals: Environment = {
+    val environment = Environment()
+    environment.define(
+      "clock",
+      new LoxCallable {
+        val arity                         = 0
+        def call(args: List[Any]): Double = System.currentTimeMillis() / 1000d
+        override def toString(): String   = "<native clock fn>"
+      },
+    )
+    environment
+  }
+
+  private var environment: Environment = globals
 
   override def visitLogicalExpr(expr: Logical): Any =
     val left: Any = evaluate(expr.left)
