@@ -6,6 +6,19 @@ import dev.toniogela.lox.Environment
 
 object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
+  override def visitCallExpr(expr: Call): Any =
+    val callee: Any           = evaluate(expr.callee)
+    val args: List[Any]       = expr.arguments.map(evaluate)
+    val function: LoxCallable =
+      if callee.isInstanceOf[LoxCallable] then callee.asInstanceOf[LoxCallable]
+      else throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+    if args.size != function.arity then
+      throw new RuntimeError(
+        expr.paren,
+        s"Expected ${function.arity} arguments but got ${args.size}.",
+      )
+    function.call(args)
+
   override def visitWhileStmt(stmt: While): Unit =
     while isThruthy(evaluate(stmt.condition)) do execute(stmt.body)
 

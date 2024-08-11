@@ -5,6 +5,7 @@ import dev.toniogela.lox.Slox
 import dev.toniogela.lox.ast.*
 import dev.toniogela.lox.scanner.*
 import dev.toniogela.lox.scanner.TokenType.*
+import scala.util.control.Breaks.*
 
 class Parser(val tokens: List[Token]):
   // ! TODO Mutability
@@ -190,9 +191,35 @@ class Parser(val tokens: List[Token]):
       val operator: Token = previous()
       val right: Expr     = unary()
       new Unary(operator, right)
-    } else primary()
+    } else call()
 
-    // ! TODO Multiple returns
+  private def call(): Expr =
+    var expr: Expr = primary()
+    breakable {
+      while true do {
+        if matches(LEFT_PAREN) then {
+          expr = finishCall(expr)
+        } else {
+          break
+        }
+      }
+    }
+    expr
+
+  private def finishCall(callee: Expr): Expr =
+    val arguments: List[Expr] =
+      if check(RIGHT_PAREN) then Nil
+      else
+        val firstArg = expression()
+        Iterator.continually(expression())
+          .takeWhile(_ => matches(COMMA))
+          .toList.prepended(firstArg)
+    if arguments.size >= 255 then
+      // * It shouldn't throw, we want just a report
+      error(peek(), "Can't have more than 255 arguments.")
+    val paren: Token          = consume(RIGHT_PAREN, "Expect ')' after arguments.")
+    new Call(callee, paren, arguments)
+
   private def primary(): Expr = {
     if matches(FALSE) then return Literal(false)
     if matches(TRUE) then return Literal(true)

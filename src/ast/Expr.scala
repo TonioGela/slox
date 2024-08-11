@@ -5,7 +5,7 @@ import dev.toniogela.lox.scanner.*
 trait Visitor[T]:
   def visitAssignExpr(expr: Assign): T
   def visitBinaryExpr(expr: Binary): T
-  // def visitCallExpr(expr: Call): T
+  def visitCallExpr(expr: Call): T
   // def visitGetExpr(expr: Get): T
   def visitGroupingExpr(expr: Grouping): T
   def visitLiteralExpr(expr: Literal): T
@@ -25,8 +25,8 @@ case class Assign(name: Token, value: Expr) extends Expr:
 case class Binary(left: Expr, operator: Token, right: Expr) extends Expr:
   override def accept[T](visitor: Visitor[T]): T = visitor.visitBinaryExpr(this)
 
-// case class Call(callee: Expr, paren: Token, arguments: List[Expr]) extends Expr:
-//   override def accept[T](visitor: Visitor[T]): T = visitor.visitCallExpr(this)
+case class Call(callee: Expr, paren: Token, arguments: List[Expr]) extends Expr:
+  override def accept[T](visitor: Visitor[T]): T = visitor.visitCallExpr(this)
 
 // case class Get(item: Expr, name: Token) extends Expr:
 //   override def accept[T](visitor: Visitor[T]): T = visitor.visitGetExpr(this)
