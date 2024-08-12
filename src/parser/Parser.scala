@@ -21,17 +21,39 @@ class Parser(val tokens: List[Token]):
 
   private def declaration(): Stmt =
     try {
-      if matches(VAR) then varDeclaration() else statement()
+      if matches(FUN) then function("function")
+      else if matches(VAR) then varDeclaration()
+      else statement()
     } catch {
       case _: ParseError => synchronize(); null
     }
+
+  private def function(kind: String): Stmt.Function =
+    val name: Token             = consume(IDENTIFIER, "Expect " + kind + " name.")
+    consume(LEFT_PAREN, "Expect '(' after " + kind + " name.")
+    val parameters: List[Token] =
+      if !check(RIGHT_PAREN) then {
+        val firstParam               = consume(IDENTIFIER, "Expect parameter name.")
+        var otherParams: List[Token] = Nil
+        while matches(COMMA) do
+          otherParams = consume(IDENTIFIER, "Expect parameter name.") :: otherParams
+        firstParam :: otherParams.toList
+      } else Nil
+    if parameters.size >= 255 then
+      error(peek(), "Can't have more than 255 parameters.")
+    consume(RIGHT_PAREN, "Expect ')' after parameters.")
+    consume(LEFT_BRACE, "Expect '{' before " + kind + " body.")
+    val body: List[Stmt]        = block()
+    Stmt.Function(name, parameters, body)
+
+  end function
 
   private def statement(): Stmt =
     if matches(FOR) then forStatement()
     else if matches(IF) then ifStatement()
     else if matches(PRINT) then printStatement()
     else if matches(WHILE) then whileStatement()
-    else if matches(LEFT_BRACE) then Block(block())
+    else if matches(LEFT_BRACE) then Stmt.Block(block())
     else expressionStatement()
 
   private def forStatement(): Stmt =
@@ -50,14 +72,14 @@ class Parser(val tokens: List[Token]):
     val body: Stmt = statement()
 
     val bodyWithIncrement: Stmt =
-      increment.fold(body)(incExpr => Block(body :: Expression(incExpr) :: Nil))
+      increment.fold(body)(incExpr => Stmt.Block(body :: Stmt.Expression(incExpr) :: Nil))
 
-    val whileLoop: Stmt = While(
+    val whileLoop: Stmt = Stmt.While(
       condition.getOrElse(Literal(true)),
       bodyWithIncrement,
     )
 
-    initializer.fold(whileLoop)(initStmt => Block(initStmt :: whileLoop :: Nil))
+    initializer.fold(whileLoop)(initStmt => Stmt.Block(initStmt :: whileLoop :: Nil))
 
   end forStatement
 
@@ -66,7 +88,7 @@ class Parser(val tokens: List[Token]):
     val condition: Expr = expression()
     consume(RIGHT_PAREN, "Expect ')' after condition.")
     val body: Stmt      = statement()
-    While(condition, body)
+    Stmt.While(condition, body)
 
   private def ifStatement(): Stmt =
     consume(LEFT_PAREN, "Expect '(' after 'if'.")
@@ -74,7 +96,7 @@ class Parser(val tokens: List[Token]):
     consume(RIGHT_PAREN, "Expect ')' after if condition.")
     val thenBranch: Stmt = statement()
     var elseBranch: Stmt = if matches(ELSE) then statement() else null
-    If(condition, thenBranch, elseBranch)
+    Stmt.If(condition, thenBranch, elseBranch)
 
   private def block(): List[Stmt] = {
     val statements = ListBuffer.empty[Stmt]
@@ -92,17 +114,17 @@ class Parser(val tokens: List[Token]):
       SEMICOLON,
       "Expect ';' after variable declaration.",
     )
-    Var(name, initializer)
+    Stmt.Var(name, initializer)
 
   private def printStatement(): Stmt =
     val value: Expr = expression()
     consume(SEMICOLON, "Expect ';' after value.")
-    Print(value)
+    Stmt.Print(value)
 
   private def expressionStatement(): Stmt =
     val value: Expr = expression()
     consume(SEMICOLON, "Expect ';' after expression.")
-    Expression(value)
+    Stmt.Expression(value)
 
   private def expression(): Expr = assignment()
 
@@ -210,10 +232,11 @@ class Parser(val tokens: List[Token]):
     val arguments: List[Expr] =
       if check(RIGHT_PAREN) then Nil
       else
-        val firstArg = expression()
-        Iterator.continually(expression())
-          .takeWhile(_ => matches(COMMA))
-          .toList.prepended(firstArg)
+        val firstArg: Expr        = expression()
+        var otherExpr: List[Expr] = Nil
+        while matches(COMMA) do
+          otherExpr = expression() :: otherExpr
+        firstArg :: otherExpr
     if arguments.size >= 255 then
       // * It shouldn't throw, we want just a report
       error(peek(), "Can't have more than 255 arguments.")

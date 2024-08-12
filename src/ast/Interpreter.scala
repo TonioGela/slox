@@ -6,6 +6,10 @@ import dev.toniogela.lox.Environment
 
 object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
+  override def visitFunctionStmt(stmt: Stmt.Function): Unit =
+    val function: LoxFunction = LoxFunction(stmt)
+    environment.define(stmt.name.lexeme, function)
+
   override def visitCallExpr(expr: Call): Any =
     val callee: Any           = evaluate(expr.callee)
     val args: List[Any]       = expr.arguments.map(evaluate)
@@ -19,7 +23,7 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
       )
     function.call(args)
 
-  override def visitWhileStmt(stmt: While): Unit =
+  override def visitWhileStmt(stmt: Stmt.While): Unit =
     while isThruthy(evaluate(stmt.condition)) do execute(stmt.body)
 
   final val globals: Environment = {
@@ -45,15 +49,16 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
       if !isThruthy(left) then left else evaluate(expr.right)
     }
 
-  override def visitIfStmt(stmt: If): Unit =
+  override def visitIfStmt(stmt: Stmt.If): Unit =
     if isThruthy(evaluate(stmt.condition)) then
       execute(stmt.thenBranch)
     else if stmt.thenBranch != null then
       execute(stmt.elseBranch)
 
-  override def visitBlockStmt(stmt: Block): Unit = executeBlock(stmt.statements, environment.child())
+  override def visitBlockStmt(stmt: Stmt.Block): Unit =
+    executeBlock(stmt.statements, environment.child())
 
-  override def visitVarStmt(stmt: Var): Unit =
+  override def visitVarStmt(stmt: Stmt.Var): Unit =
     val value: Any = Option(stmt.initializer).map(evaluate).getOrElse(null)
     environment.define(stmt.name.lexeme, value)
 
@@ -64,9 +69,9 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
 
   override def visitVariableExpr(expr: Variable): Any = environment.get(expr.name)
 
-  override def visitExpressionStmt(stmt: Expression): Unit = evaluate(stmt.expr)
+  override def visitExpressionStmt(stmt: Stmt.Expression): Unit = evaluate(stmt.expr)
 
-  override def visitPrintStmt(stmt: Print): Unit =
+  override def visitPrintStmt(stmt: Stmt.Print): Unit =
     val value = evaluate(stmt.expr)
     println(stringify(value))
 
@@ -129,7 +134,7 @@ object Interpreter extends Visitor[Any] with StmtVisitor[Unit]:
   private def evaluate(expr: Expr): Any = expr.accept(this)
   private def execute(stmt: Stmt): Unit = stmt.accept(this) // * make it accept an enviroment too (to avoid mutability)
 
-  private def executeBlock(stmts: List[Stmt], env: Environment): Unit =
+  def executeBlock(stmts: List[Stmt], env: Environment): Unit =
     val prevEnvironment: Environment = this.environment
     try {
       this.environment = env
